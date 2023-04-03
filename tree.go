@@ -155,7 +155,7 @@ func (n *node) addRoute(path string, handlers HandlersChain) {
 
 	// Empty tree
 	if len(n.path) == 0 && len(n.children) == 0 {
-		n.insertChild(path, fullPath, handlers)
+		n.insertChild(path, fullPath, handlers) // todo gold so path==fullpath now?
 		n.nType = root
 		return
 	}
@@ -271,7 +271,7 @@ func findWildcard(path string) (wildcard string, i int, valid bool) {
 	// Find start
 	for start, c := range []byte(path) {
 		// A wildcard starts with ':' (param) or '*' (catch-all)
-		if c != ':' && c != '*' {
+		if c != ':' && c != '*' { // todo gold wildcard only support : and *
 			continue
 		}
 
@@ -280,9 +280,9 @@ func findWildcard(path string) (wildcard string, i int, valid bool) {
 		for end, c := range []byte(path[start+1:]) {
 			switch c {
 			case '/':
-				return path[start : start+1+end], start, valid
+				return path[start : start+1+end], start, valid // todo gold find valid wildcard param
 			case ':', '*':
-				valid = false
+				valid = false // todo gold no more than 1 : or * in a wildcard part.
 			}
 		}
 		return path[start:], start, valid
