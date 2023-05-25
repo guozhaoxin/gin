@@ -160,8 +160,8 @@ type Engine struct {
 	noMethod         HandlersChain
 	pool             sync.Pool
 	trees            methodTrees
-	maxParams        uint16
-	maxSections      uint16
+	maxParams        uint16 // 含有的参数和 * 的数量
+	maxSections      uint16 // todo gzx 这个似乎记录的是路径可以被分割为多少部分，但是最后一个路径分隔符很随意的。
 	trustedProxies   []string
 	trustedCIDRs     []*net.IPNet
 }
@@ -326,9 +326,9 @@ func (engine *Engine) addRoute(method, path string, handlers HandlersChain) {
 	if root == nil {
 		root = new(node)
 		root.fullPath = "/"
-		engine.trees = append(engine.trees, methodTree{method: method, root: root})
+		engine.trees = append(engine.trees, methodTree{method: method, root: root}) // 由此可知，有的协议可能根本用不到，trees 长度不一定是9.
 	}
-	root.addRoute(path, handlers)
+	root.addRoute(path, handlers) // node 类型也有自己id addRoute，而且巨复杂！
 
 	// Update maxParams
 	if paramsCount := countParams(path); paramsCount > engine.maxParams {
