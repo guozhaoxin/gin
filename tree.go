@@ -154,7 +154,7 @@ func (n *node) addRoute(path string, handlers HandlersChain) {
 	n.priority++
 
 	// Empty tree
-	if len(n.path) == 0 && len(n.children) == 0 {
+	if len(n.path) == 0 && len(n.children) == 0 { // todo gold 什么情况下，两者会有一个不满足？
 		n.insertChild(path, fullPath, handlers) // todo gold so path==fullpath now?
 		n.nType = root
 		return
@@ -344,7 +344,7 @@ func (n *node) insertChild(path string, fullPath string, handlers HandlersChain)
 			n.handlers = handlers
 			return
 		}
-
+		// todo gold 模糊参数也到这？
 		// catchAll
 		if i+len(wildcard) != len(path) {
 			panic("catch-all routes are only allowed at the end of the path in path '" + fullPath + "'")
