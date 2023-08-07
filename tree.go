@@ -91,6 +91,7 @@ func (n *node) addChild(child *node) {
 	}
 }
 
+// todo gzx 这个函数然我困惑的地方在于，它通过先转换成字节的方式，再去统计正则符的数量，这样会比遍历快吗？
 func countParams(path string) uint16 {
 	var n uint16
 	s := bytesconv.StringToBytes(path)

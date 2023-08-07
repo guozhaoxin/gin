@@ -9,6 +9,7 @@ import (
 )
 
 // StringToBytes converts string to byte slice without a memory allocation.
+// todo gzx 这种指针的转换在 go 中是如何进行的呢？
 func StringToBytes(s string) []byte {
 	return *(*[]byte)(unsafe.Pointer(
 		&struct {
