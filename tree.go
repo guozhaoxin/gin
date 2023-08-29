@@ -152,12 +152,12 @@ func (n *node) incrementChildPrio(pos int) int {
 // Not concurrency-safe!
 func (n *node) addRoute(path string, handlers HandlersChain) {
 	fullPath := path
-	n.priority++
+	n.priority++ // 从根节点添加，因此优先级一定会增加 todo gzx 但是这里就操作未免太早了
 
 	// Empty tree
-	if len(n.path) == 0 && len(n.children) == 0 { // todo gold 什么情况下，两者会有一个不满足？
-		n.insertChild(path, fullPath, handlers) // todo gold so path==fullpath now?
-		n.nType = root
+	if len(n.path) == 0 && len(n.children) == 0 { // todo gold 什么情况下，两者会有一个不满足？ 应该是这样的场景，比如刚加入根节点，还没有子节点时，会前 false 后 true；但是应该不会出现前 true 后 false 的情况
+		n.insertChild(path, fullPath, handlers)
+		n.nType = root // todo gzx 插入的是根节点
 		return
 	}
 
@@ -168,28 +168,28 @@ walk:
 		// Find the longest common prefix.
 		// This also implies that the common prefix contains no ':' or '*'
 		// since the existing key can't contain those chars.
-		i := longestCommonPrefix(path, n.path)
+		i := longestCommonPrefix(path, n.path) // todo gzx 找到的是第一个不同字符的索引，但是为什么会认为不包含 : 和 * ？
 
 		// Split edge
-		if i < len(n.path) {
+		if i < len(n.path) { // todo gzx 这时候需要将 n 节点进行拆分。
 			child := node{
 				path:      n.path[i:],
-				wildChild: n.wildChild,
+				wildChild: n.wildChild, // todo gzx 维持原来的这个属性？
 				nType:     static,
-				indices:   n.indices,
+				indices:   n.indices, // todo gzx 这里在后面应该会变;
 				children:  n.children,
 				handlers:  n.handlers,
-				priority:  n.priority - 1,
+				priority:  n.priority - 1, // todo gzx 为什么做减法？
 				fullPath:  n.fullPath,
 			}
 
 			n.children = []*node{&child}
-			// []byte for proper unicode char conversion, see #65
+			// []byte for proper unicode char conversion, see #65 todo gzx 这个问题需要查一下 gin
 			n.indices = bytesconv.BytesToString([]byte{n.path[i]})
 			n.path = path[:i]
 			n.handlers = nil
-			n.wildChild = false
-			n.fullPath = fullPath[:parentFullPathIndex+i]
+			n.wildChild = false // todo gzx 强制设为 false
+			n.fullPath = fullPath[:parentFullPathIndex+i] // todo gzx 不懂
 		}
 
 		// Make new node a child of this node
@@ -198,7 +198,7 @@ walk:
 			c := path[0]
 
 			// '/' after param
-			if n.nType == param && c == '/' && len(n.children) == 1 {
+			if n.nType == param && c == '/' && len(n.children) == 1 { // todo gzx n 是参数类型节点，path 是完全新的一个路由，且n只有一个子节点（这种情况只能是因为上面 path 是完整的?）
 				parentFullPathIndex += len(n.path)
 				n = n.children[0]
 				n.priority++
@@ -216,14 +216,14 @@ walk:
 			}
 
 			// Otherwise insert it
-			if c != ':' && c != '*' && n.nType != catchAll {
+			if c != ':' && c != '*' && n.nType != catchAll { // 新节点的 path 是个普通的字符串
 				// []byte for proper unicode char conversion, see #65
 				n.indices += bytesconv.BytesToString([]byte{c})
 				child := &node{
 					fullPath: fullPath,
 				}
-				n.addChild(child)
-				n.incrementChildPrio(len(n.indices) - 1)
+				n.addChild(child) // todo gzx 就是插入一个很普通的节点
+				n.incrementChildPrio(len(n.indices) - 1) // todo gzx 因为上一步中添加的字节一定是在 indices 的最后一个，addChild 只保证 children 的最后一个是正则，其它不会动。
 				n = child
 			} else if n.wildChild {
 				// inserting a wildcard node, need to check if it conflicts with the existing wildcard

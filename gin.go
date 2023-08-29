@@ -338,6 +338,31 @@ func (engine *Engine) addRoute(method, path string, handlers HandlersChain) {
 	if sectionsCount := countSections(path); sectionsCount > engine.maxSections {
 		engine.maxSections = sectionsCount
 	}
+	engine.printNode(method)
+}
+
+func(engine *Engine) printNode(method string){
+	helper(engine.trees.get(method),1)
+}
+
+func helper(nd *node,dept int){
+	if nd == nil{
+		return
+	}
+	tab := ""
+	for i:=0;i<dept;i++{
+		tab += "-"
+	}
+	fmt.Printf("%s path=%s\n",tab,nd.path)
+	fmt.Printf("%s fullpath=%s\n",tab,nd.fullPath)
+	fmt.Printf("%s indices=%s\n",tab,nd.indices)
+	//fmt.Printf("%s types=%d\n",tab,nd.nType)
+	//fmt.Printf("%s priority=%d\n",tab,nd.priority)
+	fmt.Printf("%s wild=%v\n",tab,nd.wildChild)
+	//fmt.Printf("%s len(children)=%d\n",tab,len(nd.children))
+	for _, child := range nd.children{
+		helper(child,dept + 1)
+	}
 }
 
 // Routes returns a slice of registered routes, including some useful information, such as:
