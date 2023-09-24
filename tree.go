@@ -6,6 +6,7 @@ package gin
 
 import (
 	"bytes"
+	"fmt"
 	"net/url"
 	"strings"
 	"unicode"
@@ -295,6 +296,7 @@ func (n *node) insertChild(path string, fullPath string, handlers HandlersChain)
 	for {
 		// Find prefix until first wildcard
 		wildcard, i, valid := findWildcard(path)
+		fmt.Println("wild is ",wildcard)
 		if i < 0 { // No wildcard found
 			break
 		}
@@ -345,12 +347,13 @@ func (n *node) insertChild(path string, fullPath string, handlers HandlersChain)
 			n.handlers = handlers
 			return
 		}
-		// todo gold 模糊参数也到这？
-		// catchAll
+
+		// catchAll 能走到这里的，只有 * 参数一种情况
 		if i+len(wildcard) != len(path) {
 			panic("catch-all routes are only allowed at the end of the path in path '" + fullPath + "'")
 		}
 
+		// todo gzx 比如说 /post/ 是否父节点 path，而如果当前要处理的是 /post/*key，就会异常。还不确定为什么要这样。
 		if len(n.path) > 0 && n.path[len(n.path)-1] == '/' {
 			pathSeg := strings.SplitN(n.children[0].path, "/", 2)[0]
 			panic("catch-all wildcard '" + path +
